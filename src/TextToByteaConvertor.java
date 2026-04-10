@@ -41,7 +41,7 @@ public class TextToByteaConvertor {
         } else if (Files.isRegularFile(originalPath)) {
             processConvertor(originalPath, isDirectory);
         } else {
-            throw new IOException("The provided file type of " + originalPath + " must be neither directory nor regular file");
+            throw new IOException("The provided type of path " + originalPath + " seem to be neither directory nor regular file");
         }
     }
 
