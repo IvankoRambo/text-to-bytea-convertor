@@ -90,7 +90,7 @@ public class TextToByteaConvertor {
     }
 
     private boolean isBytesFile(String fileName) {
-        return fileName.contains(".bytes");
+        return fileName.contains("." + DEFAULT_OUTPUT_SUFFIX);
     }
 
     private Path getParentPath(Path file) throws IllegalArgumentException {
