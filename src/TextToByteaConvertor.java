@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 
 public class TextToByteaConvertor {
     public static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
@@ -25,11 +26,39 @@ public class TextToByteaConvertor {
         }
 
         String path = args[0];
-        Path originalFile = Path.of(path).toAbsolutePath().normalize();
-        String fileText = getFileText(originalFile);
-        String fileName = getFileNameOnly(originalFile);
-        Path parentPath = getParentPath(originalFile);
+        Path originalPath = Path.of(path).toAbsolutePath().normalize();
+        if (!Files.exists(originalPath)) {
+            throw new IOException("Provided path " + originalPath + " does not exist");
+        }
+        boolean isDirectory = Files.isDirectory(originalPath);
 
+        if (isDirectory) {
+            try (Stream<Path> originalFiles = Files.list(originalPath)) {
+                for (Path originalFile : (Iterable<Path>) originalFiles.filter(Files::isRegularFile)::iterator) {
+                    processConvertor(originalFile, isDirectory);
+                }
+            }
+        } else if (Files.isRegularFile(originalPath)) {
+            processConvertor(originalPath, isDirectory);
+        } else {
+            throw new IOException("The provided file type of " + originalPath + " must be neither directory nor regular file");
+        }
+    }
+
+    public static void processConvertor(Path filePath, boolean isDirectory) throws Exception {
+        String fileText = getFileText(filePath);
+        String fileName = getFileNameOnly(filePath);
+        boolean bytesFile = isBytesFile(fileName);
+        if (bytesFile) {
+            if (!isDirectory) {
+                throw new IOException("Provided file " + filePath + " is already a hex file");
+            } else {
+                System.out.println("Provided file " + filePath + " is already a hex file");
+                return;
+            }
+        }
+
+        Path parentPath = getParentPath(filePath);
         String byteaText = toByteaHex(fileText);
         Path byteaFile = saveByteaData(parentPath, fileName, byteaText);
 
@@ -49,12 +78,16 @@ public class TextToByteaConvertor {
         String fullFileName = file.getFileName().toString();
         int lastDotPos = fullFileName.lastIndexOf('.');
         if (lastDotPos <= 0) {
-            fileName = fullFileName;
+            fileName = fullFileName.replace(".", "");
         } else {
             fileName = fullFileName.substring(0, lastDotPos);
         }
 
         return fileName;
+    }
+
+    public static boolean isBytesFile(String fileName) {
+        return fileName.contains(".bytes");
     }
 
     public static Path getParentPath(Path file) throws IllegalArgumentException {
