@@ -11,16 +11,19 @@ public class TextToByteaConvertor {
     public static final String DEFAULT_OUTPUT_SUFFIX = "bytes";
     public static final int UNSIGNED_BYTE = 0xff;
 
+    public TextToByteaConvertor() {}
+
     public static void main(String[] args) {
         try {
-            run(args);
+            TextToByteaConvertor convertor = new TextToByteaConvertor();
+            convertor.run(args);
         } catch (Exception e) {
-            System.out.println("Error:\n" + e.getMessage());
+            System.err.println("Error:\n" + e.getMessage());
             System.exit(1);
         }
     }
 
-    public static void run(String[] args) throws Exception {
+    public void run(String[] args) throws Exception {
         if (args.length < 1) {
             throw new IllegalArgumentException("Lack of arguments. Usage to run: java -cp src TextToByteaConvertor \"{{pathToInputFile}}\"");
         }
@@ -45,7 +48,7 @@ public class TextToByteaConvertor {
         }
     }
 
-    public static void processConvertor(Path filePath, boolean isDirectory) throws Exception {
+    private void processConvertor(Path filePath, boolean isDirectory) throws Exception {
         String fileText = getFileText(filePath);
         String fileName = getFileNameOnly(filePath);
         boolean bytesFile = isBytesFile(fileName);
@@ -65,7 +68,7 @@ public class TextToByteaConvertor {
         System.out.println("Inserted bytea hex text into " + byteaFile);
     }
 
-    public static String getFileText(Path file) throws IOException {
+    private String getFileText(Path file) throws IOException {
         if (!Files.exists(file)) {
             throw new IOException("File not found " + file);
         }
@@ -73,7 +76,7 @@ public class TextToByteaConvertor {
         return Files.readString(file, DEFAULT_ENCODING);
     }
 
-    public static String getFileNameOnly(Path file) {
+    private String getFileNameOnly(Path file) {
         String fileName = "";
         String fullFileName = file.getFileName().toString();
         int lastDotPos = fullFileName.lastIndexOf('.');
@@ -86,11 +89,11 @@ public class TextToByteaConvertor {
         return fileName;
     }
 
-    public static boolean isBytesFile(String fileName) {
+    private boolean isBytesFile(String fileName) {
         return fileName.contains(".bytes");
     }
 
-    public static Path getParentPath(Path file) throws IllegalArgumentException {
+    private Path getParentPath(Path file) throws IllegalArgumentException {
         Path parent = file.getParent();
         if (parent == null) {
             throw new IllegalArgumentException("File " + file + " has no parent path");
@@ -99,7 +102,7 @@ public class TextToByteaConvertor {
         return parent;
     }
 
-    public static Path saveByteaData(Path parentPath, String fileName, String content) throws IOException {
+    private Path saveByteaData(Path parentPath, String fileName, String content) throws IOException {
         StringBuilder byteFileName = new StringBuilder();
         byteFileName.append(fileName);
         byteFileName.append(".");
@@ -119,7 +122,7 @@ public class TextToByteaConvertor {
         return byteFile;
     }
 
-    public static String toByteaHex(String fileText) {
+    private String toByteaHex(String fileText) {
         byte[] fileBytes = fileText.getBytes(DEFAULT_ENCODING);
         StringBuilder sb = new StringBuilder("\\x");
 
